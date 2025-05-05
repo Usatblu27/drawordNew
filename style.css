@@ -640,7 +640,7 @@ button:disabled {
   --tile-bg: radial-gradient(#ffb6c1, #ff69b4);
   --tile-hover: radial-gradient(#ffd1dc, #ffb6c1);
   --tile-fixed: radial-gradient(#d88a96, #c97582);
-  --text-color: white;
+  --text-color: black;
   --button-primary: radial-gradient(#ffb6c1, #ff69b4);
   --button-secondary: radial-gradient(#ffffff, #e6e6fa);
   --button-hint: radial-gradient(#ffd700, #daa520);
@@ -761,7 +761,7 @@ button:disabled {
 .audio-controls {
   position: fixed;
   bottom: 20px;
-  left: 20px;
+  left: 80px;
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -769,8 +769,8 @@ button:disabled {
 }
 
 .audio-toggle {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: var(--button-primary);
   display: flex;
@@ -947,43 +947,6 @@ button:disabled {
   }
 }
 
-@media (max-width: 400px) {
-  .tile {
-    margin: 1px;
-    box-sizing: border-box;
-  }
-
-  .tile-3x3 {
-    width: 20vw;
-    height: 20vw;
-    font-size: 8vw;
-  }
-
-  .tile-4x4 {
-    width: 18vw;
-    height: 18vw;
-    font-size: 7vw;
-  }
-
-  .tile-5x5 {
-    width: 14vw;
-    height: 14vw;
-    font-size: 6vw;
-  }
-
-  .word-row {
-    gap: 1px;
-    grid-template-columns: 14px repeat(var(--columns), 1fr);
-  }
-
-  .board {
-    gap: 1px;
-    padding: 2px;
-    width: 100%;
-    overflow: hidden;
-  }
-}
-
 .instructions {
   text-align: center;
   width: 300px;
@@ -1015,7 +978,7 @@ button:disabled {
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.7);
   }
   50% {
-    box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.4);
   }
   100% {
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.7);
@@ -1034,7 +997,7 @@ button:disabled {
   padding: 2px 5px;
   border-radius: 3px;
   border: 1px solid white;
-  animation: pulse 1.5s infinite;
+  animation: version 1.5s infinite;
 }
 
 .changelog {
@@ -1094,4 +1057,131 @@ button:disabled {
   border-radius: 10px;
   margin: 10px 0;
   border: 2px solid var(--message-hint);
+}
+
+.language-selector {
+  position: fixed;
+  bottom: 20px;
+  right: 80px;
+  z-index: 1000;
+}
+
+.language-toggle {
+  padding: 10px;
+  background: var(--button-primary);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  color: var(--button-text-color);
+  font-size: 20px;
+}
+
+.language-tooltip {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  background: var(--bg-color);
+  color: var(--text-color);
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  white-space: nowrap;
+  display: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Стили для статистики */
+.stats-selector {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1000;
+}
+
+.stats-toggle {
+  padding: 10px;
+  background: var(--button-primary);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  color: var(--button-text-color);
+  font-size: 20px;
+}
+
+.stats-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.stats-content {
+  background: var(--game-bg);
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  color: var(--modal-text);
+}
+
+.stats-section {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stats-mode {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+}
+
+.stat-label {
+  font-weight: bold;
+}
+
+.stat-value {
+  color: var(--message-success);
+}
+
+.instruction-step h4 {
+  color: var(--message-hint);
+  margin-bottom: 10px;
+}
+
+.instruction-step p {
+  margin: 10px 0;
+  line-height: 1.5;
+}
+
+.instruction-step ul,
+.instruction-step ol {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.instruction-step li {
+  margin-bottom: 8px;
 }

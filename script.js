@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log(wordsDictionaries);
+  // wordsDictionaries теперь доступна глобально
+  console.log(wordsDictionaries); // Проверка, что слова загружены
 
   // Переменные игры
   let currentGame = 0;
@@ -20,6 +21,113 @@ document.addEventListener("DOMContentLoaded", function () {
   let hintMode = false;
   let highlightedTiles = [];
 
+  let gameStats = {
+    totalGames: 0,
+    streakDays: 0,
+    lastPlayedDate: null,
+    modes: {
+      "3letters": { games: 0, totalTime: 0, hintsUsed: 0 },
+      "4letters": { games: 0, totalTime: 0, hintsUsed: 0 },
+      "5letters": { games: 0, totalTime: 0, hintsUsed: 0 },
+    },
+  };
+
+  // Загрузка статистики из localStorage
+  function loadStats() {
+    const savedStats = localStorage.getItem("drawordStats");
+    if (savedStats) {
+      gameStats = JSON.parse(savedStats);
+      updateStreak();
+      updateStatsDisplay();
+    }
+  }
+
+  // Сохранение статистики в localStorage
+  function saveStats() {
+    localStorage.setItem("drawordStats", JSON.stringify(gameStats));
+  }
+
+  // Обновление статистики после игры
+  function updateStats(gameMode, timeSpent, hintsUsed) {
+    const modeKey = `${gameMode}letters`;
+    gameStats.modes[modeKey].games++;
+    gameStats.modes[modeKey].totalTime += timeSpent;
+    gameStats.modes[modeKey].hintsUsed += hintsUsed;
+    gameStats.totalGames++;
+
+    // Обновляем серию дней
+    const today = new Date().toDateString();
+    if (gameStats.lastPlayedDate !== today) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (gameStats.lastPlayedDate === yesterday.toDateString()) {
+        gameStats.streakDays++;
+      } else {
+        gameStats.streakDays = 1;
+      }
+      gameStats.lastPlayedDate = today;
+    }
+
+    saveStats();
+    updateStatsDisplay();
+  }
+
+  // Обновление отображения статистики
+  function updateStatsDisplay() {
+    document.getElementById("total-games").textContent = gameStats.totalGames;
+    document.getElementById("streak-days").textContent = gameStats.streakDays;
+
+    // 3 буквы
+    const mode3 = gameStats.modes["3letters"];
+    document.getElementById("games-3-letters").textContent = mode3.games;
+    document.getElementById("avg-time-3-letters").textContent = mode3.games
+      ? Math.round(mode3.totalTime / mode3.games / 1000) + " сек"
+      : "0 сек";
+    document.getElementById("hints-per-game-3-letters").textContent =
+      mode3.games ? (mode3.hintsUsed / mode3.games).toFixed(1) : "0";
+
+    // 4 буквы
+    const mode4 = gameStats.modes["4letters"];
+    document.getElementById("games-4-letters").textContent = mode4.games;
+    document.getElementById("avg-time-4-letters").textContent = mode4.games
+      ? Math.round(mode4.totalTime / mode4.games / 1000) + " сек"
+      : "0 сек";
+    document.getElementById("hints-per-game-4-letters").textContent =
+      mode4.games ? (mode4.hintsUsed / mode4.games).toFixed(1) : "0";
+
+    // 5 букв
+    const mode5 = gameStats.modes["5letters"];
+    document.getElementById("games-5-letters").textContent = mode5.games;
+    document.getElementById("avg-time-5-letters").textContent = mode5.games
+      ? Math.round(mode5.totalTime / mode5.games / 1000) + " сек"
+      : "0 сек";
+    document.getElementById("hints-per-game-5-letters").textContent =
+      mode5.games ? (mode5.hintsUsed / mode5.games).toFixed(1) : "0";
+  }
+
+  // Обновление серии дней
+  function updateStreak() {
+    if (!gameStats.lastPlayedDate) return;
+
+    const today = new Date().toDateString();
+    const lastPlayed = new Date(gameStats.lastPlayedDate);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (today === gameStats.lastPlayedDate) {
+      // Уже играли сегодня
+      return;
+    } else if (yesterday.toDateString() === gameStats.lastPlayedDate) {
+      // Играли вчера - увеличиваем серию
+      gameStats.streakDays++;
+      gameStats.lastPlayedDate = today;
+      saveStats();
+    } else {
+      // Пропустили день - сбрасываем серию
+      gameStats.streakDays = 0;
+    }
+  }
+
   // Add to setupModals()
   const versionInfo = document.querySelector(".version-info");
   versionInfo.addEventListener("click", () => {
@@ -27,10 +135,10 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Аудио
-  const moveSound = new Audio("move.mp3");
+  const moveSound = new Audio("/audio/move.mp3");
   moveSound.volume = 0.5;
 
-  const winSound = new Audio("win.mp3");
+  const winSound = new Audio("/audio/win.mp3");
   winSound.volume = 0.7;
 
   // Фоновая музыка
@@ -47,6 +155,30 @@ document.addEventListener("DOMContentLoaded", function () {
     switchGame(0);
     setupModals();
     setupAudioControls();
+    loadStats();
+
+    const languageToggle = document.getElementById("language-toggle");
+    const languageTooltip = document.querySelector(".language-tooltip");
+
+    languageToggle.addEventListener("click", () => {
+      languageTooltip.style.display = "block";
+      setTimeout(() => {
+        languageTooltip.style.display = "none";
+      }, 2000);
+    });
+
+    // Настройка кнопки статистики
+    const statsToggle = document.getElementById("stats-toggle");
+    const statsModal = document.getElementById("stats-modal");
+
+    statsToggle.addEventListener("click", () => {
+      statsModal.style.display = "flex";
+    });
+
+    // Закрытие модального окна статистики
+    statsModal.querySelector(".close-modal").addEventListener("click", () => {
+      statsModal.style.display = "none";
+    });
   }
 
   // Настройка аудио контролов
@@ -156,55 +288,30 @@ document.addEventListener("DOMContentLoaded", function () {
     const wordLength = currentGame === 0 ? 3 : currentGame === 1 ? 4 : 5;
     const timeSpent = Math.floor((endTime - startTime) / 1000);
 
-    // Получаем реально составленные слова
-    const userWords = [];
-    for (let i = 0; i < currentWords.length; i++) {
-      const start = i * wordLength;
-      const end = start + wordLength;
-      userWords.push(letters.slice(start, end).join(""));
-    }
+    const shareText = `Я разгадал слова в draword${
+      isSolved ? `: ${currentWords.join(", ")}` : ""
+    } за ${timeSpent} секунд!`;
 
-    // Создаем скриншот всего игрового поля
-    html2canvas(document.querySelector(".game-section"), {
-      backgroundColor: null,
-      scale: 0.8,
-    }).then((canvas) => {
-      const screenshot = canvas.toDataURL("image/png");
-      const shareText = `Я разгадал слова в draword: ${userWords.join(
-        ", "
-      )} за ${timeSpent} секунд! ${screenshot}`;
+    const shareUrl = "https://usatblu27.github.io/draword";
 
-      // Обновляем мета-тег для соцсетей
-      document.querySelector('meta[property="og:image"]').content = screenshot;
+    // Настройка кнопок поделиться
+    document.getElementById(
+      "share-vk"
+    ).href = `https://vk.com/share.php?url=${encodeURIComponent(
+      shareUrl
+    )}&title=draword&description=${encodeURIComponent(shareText)}`;
 
-      // Обновляем ссылки для шаринга
-      const shareUrl = "https://usatblu27.github.io/draword";
+    document.getElementById(
+      "share-telegram"
+    ).href = `https://t.me/share/url?url=${encodeURIComponent(
+      shareUrl
+    )}&text=${encodeURIComponent(shareText)}`;
 
-      document.getElementById(
-        "share-vk"
-      ).href = `https://vk.com/share.php?url=${encodeURIComponent(
-        shareUrl
-      )}&title=draword&description=${encodeURIComponent(shareText)}`;
-
-      document.getElementById(
-        "share-telegram"
-      ).href = `https://t.me/share/url?url=${encodeURIComponent(
-        shareUrl
-      )}&text=${encodeURIComponent(shareText)}`;
-
-      document.getElementById(
-        "share-whatsapp"
-      ).href = `https://wa.me/?text=${encodeURIComponent(
-        shareText + " " + shareUrl
-      )}`;
-
-      // Показываем скриншот в модальном окне
-      const shareModal = document.getElementById("share-modal");
-      const screenshotPreview = document.createElement("img");
-      screenshotPreview.src = screenshot;
-      screenshotPreview.style.maxWidth = "100%";
-      shareModal.querySelector(".modal-content").prepend(screenshotPreview);
-    });
+    document.getElementById(
+      "share-whatsapp"
+    ).href = `https://wa.me/?text=${encodeURIComponent(
+      shareText + " " + shareUrl
+    )}`;
   }
 
   // Инициализация темы
@@ -518,6 +625,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (allCorrect) {
       isSolved = true;
+      if (allCorrect) {
+        isSolved = true;
+        endTime = new Date();
+        const timeSpent = endTime - startTime;
+        const gameMode = currentGame === 0 ? 3 : currentGame === 1 ? 4 : 5;
+        updateStats(gameMode, timeSpent, hintsUsed);
+        // ... остальной код
+      }
       endTime = new Date();
       messageEl.textContent = "Поздравляю! Вы решили головоломку!";
       messageEl.style.color = "var(--message-success)";
